@@ -11,43 +11,73 @@
      _a < _b ? _a : _b; })
 
 /*void recurse(const char *name, void (*callback)(struct dirent *))*/
+//void recurse(char name[], size_t nlen, size_t nmax, int (*callback)(const char *))
+//{
+//    DIR *cur;
+//    struct dirent *entry = NULL;
+//
+//    if (!(cur = opendir(name))) return;
+//
+//    name[nlen++] = '/';
+//    name[nlen] = 0;
+//
+//    //char path[1024];
+//    //memcpy(path, name, sizeof path);
+//    //size_t offset; while (path[
+//
+//    while ((entry = readdir(cur))) {
+//        if (invalid_dir(entry->d_name)) continue;
+//
+// //       printf("processing '%s'\n", entry->d_name); 
+//
+//        // memcpy(name+nlen+1, entry->d_name,
+//                 /*min(sizeof(name)-nlen-1, sizeof(entry->d_name)));*/
+//
+//        size_t offset = snprintf(name+nlen, nmax-nlen, "%s", entry->d_name); // OPT: prolly faster with a raw loop
+//
+////        for (int i=0; name[i]; ++i) printf("%c", name[i]); printf("\n");
+//
+//        callback(name);
+////        if (!strcmp(name, "./testdir") && entry->d_type == DT_DIR)
+////            getchar(),
+////            fprintf(stderr, "entry %d should be %d\n", entry->d_type, DT_DIR);
+//        if (entry->d_type == DT_DIR && !strcmp(name, "./testdir")) {
+//            // snprintf(path, sizeof(path), "%s/%s", name, entry->d_name); // https://stackoverflow.com/a/8438663
+//            fprintf(stderr, "name is '%50s', open would be %x\n", entry->d_name, opendir(name));
+//            recurse(name, nlen+offset, nmax, callback);
+//        }
+//    }
+//    closedir(cur);
+//}
+
+size_t counter = 0;
+
 void recurse(char name[], size_t nlen, size_t nmax, int (*callback)(const char *))
 {
-    DIR *cur;
-    struct dirent *entry = NULL;
+    DIR *dir;
+    struct dirent *entry;
 
-    if (!(cur = opendir(name))) return;
 
-    name[nlen++] = '/';
-    name[nlen] = 0;
+    if (!(dir = opendir(name)))
+        return;
+//    name[nlen++] = '/';
+//    name[nlen] = 0;
 
-    //char path[1024];
-    //memcpy(path, name, sizeof path);
-    //size_t offset; while (path[
+    ++counter;
 
-    while ((entry = readdir(cur))) {
+    while ((entry = readdir(dir)) != NULL) {
         if (invalid_dir(entry->d_name)) continue;
-
- //       printf("processing '%s'\n", entry->d_name); 
-
-        // memcpy(name+nlen+1, entry->d_name,
-                 /*min(sizeof(name)-nlen-1, sizeof(entry->d_name)));*/
-
-        size_t offset = snprintf(name+nlen, nmax-nlen, "%s", entry->d_name); // OPT: prolly faster with a raw loop
-
-//        for (int i=0; name[i]; ++i) printf("%c", name[i]); printf("\n");
-
-        callback(name);
-//        if (!strcmp(name, "./testdir") && entry->d_type == DT_DIR)
-//            getchar(),
-//            fprintf(stderr, "entry %d should be %d\n", entry->d_type, DT_DIR);
-        if (entry->d_type == DT_DIR && !strcmp(name, "./testdir")) {
-            // snprintf(path, sizeof(path), "%s/%s", name, entry->d_name); // https://stackoverflow.com/a/8438663
-            fprintf(stderr, "name is '%50s', open would be %x\n", entry->d_name, opendir(name));
-            recurse(name, nlen+offset, nmax, callback);
+        //callback(entry->d_name);
+        if (entry->d_type == DT_DIR) {
+            char path[1024];
+            if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0)
+                continue;
+            snprintf(path, sizeof(path), "%s/%s", name, entry->d_name);
+            //printf("%*s[%s]\n", indent, "", entry->d_name);
+            recurse(path, nlen, nmax, callback);
         }
     }
-    closedir(cur);
+    closedir(dir);
 }
 
 void print(struct dirent *entry)
