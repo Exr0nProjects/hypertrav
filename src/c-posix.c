@@ -4,13 +4,7 @@
 
 #define invalid_dir(str) (str[0] == '.'  && (str[1] == '\0' || (str[1] == '.' && str[2] == '\0')))
 
-//// https://stackoverflow.com/a/3437484
-//#define min(a,b) \
-//   ({ __typeof__ (a) _a = (a); \
-//       __typeof__ (b) _b = (b); \
-//     _a < _b ? _a : _b; })
-
-void recurse(char path[], size_t nlen, size_t nmax, int (*callback)(const char *))
+void list_dir(char path[], size_t nlen, size_t nmax, int (*callback)(const char *))
 {
     DIR *dir;
     struct dirent *entry;
@@ -34,30 +28,16 @@ void recurse(char path[], size_t nlen, size_t nmax, int (*callback)(const char *
 
         // recurse directories
         if (entry->d_type == DT_DIR)
-            recurse(path, nlen+n, nmax, callback);
+            list_dir(path, nlen+n, nmax, callback);
     }
     closedir(dir);
-}
-
-//void print(struct dirent *entry)
-//{
-//    puts(entry->d_name);
-//}
-size_t counter;
-int print(const char *s)
-{
-    ++counter;
-    //return puts(s);
-    return 0;
 }
 
 int main(int argc, const char**argv) {
 
     char path[1<<16] = ".";
     if (argc > 1) memcpy(path, argv[1], strlen(argv[1]));
-    recurse(path, strlen(path), sizeof(path), print);
-
-    printf("total = %lu\n", counter);
+    list_dir(path, strlen(path), sizeof(path), puts);
 
     return 0;
 }
