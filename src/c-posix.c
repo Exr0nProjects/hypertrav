@@ -50,31 +50,45 @@
 //    closedir(cur);
 //}
 
-size_t counter = 0;
-
 void recurse(char name[], size_t nlen, size_t nmax, int (*callback)(const char *))
 {
     DIR *dir;
     struct dirent *entry;
 
-
     if (!(dir = opendir(name)))
         return;
-//    name[nlen++] = '/';
-//    name[nlen] = 0;
-
-    ++counter;
+    name[nlen++] = '/';
+    //name[nlen] = 0;
 
     while ((entry = readdir(dir)) != NULL) {
         if (invalid_dir(entry->d_name)) continue;
-        //callback(entry->d_name);
+
+        callback(entry->d_name);
+
         if (entry->d_type == DT_DIR) {
             char path[1024];
-            if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0)
-                continue;
-            snprintf(path, sizeof(path), "%s/%s", name, entry->d_name);
+            //snprintf(path, sizeof(path), "%s/%s", name, entry->d_name);
+
+            //memcpy(path, name, nlen);
+            //size_t m = snprintf(path+nlen, sizeof(path)-nlen, "%s", entry->d_name);
+            //recurse(path, nlen+m, nmax, callback);
+            //size_t offset = snprintf(name+nlen, nmax-nlen, "/%s", entry->d_name);
+
+
+
+
+            size_t n=0; for (; entry->d_name[n]; ++n)
+                name[nlen+n] = entry->d_name[n];
+            name[nlen+n] = 0;
+            recurse(name, nlen+n, nmax, callback);
+
+
+
+
+            //if (strcmp(path, name)) fprintf(stderr, "got '%s' expected\n    '%s'\n", path, name);
+            //printf("dir '%s'\n", path);
             //printf("%*s[%s]\n", indent, "", entry->d_name);
-            recurse(path, nlen, nmax, callback);
+            //recurse(name, nlen+n, nmax, callback);
         }
     }
     closedir(dir);
