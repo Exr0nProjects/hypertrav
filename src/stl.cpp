@@ -10,10 +10,13 @@ int main() {
 
     //fs::path current_dir(".");
     auto fs_it = fs::recursive_directory_iterator(fs::path("."),
-        fs::directory_options::skip_permission_denied);
+        fs::directory_options::skip_permission_denied); // eq to find -H, which gets 651.7 10
 
     for (auto &file : fs_it) {
-        std::cout << file.path().filename().string() << "\n";
+        //std::cout << file.path().filename().string() << "\n"; // only filename, 909.5 19.8
+        //std::cout << std::filesystem::absolute(file.path()).string() << "\n"; // root path, 1500 25 (v bad)
+        puts(std::filesystem::absolute(file.path()).c_str()); // root path, puts over cout, 1452 9 (still slow)
+        //++counter;    // just traversal: 850.2 15.6 (too slow, give up on this iterator thing)
     }
 }
 
