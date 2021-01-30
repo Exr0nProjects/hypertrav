@@ -3,7 +3,7 @@
 ## what
 `hypertrav` recursively lists files and directories as fast as possible. Think `find .` without any bells and whistles.
 
-It's 1.5 times faster than GNU `find`.
+It's 1.5 times faster than GNU `find`, and 3.9 times faster user space wise.
 
 ![Benchmark of hypertrav running 1.5x faster than find](./docs/bench.png)
 
@@ -15,6 +15,11 @@ Intended for use with `fzf` or as a front end to any interactive narrowing featu
 Simply `hypertrav | fzf` or `export FZF_CTRL_T_COMMAND=hypertrav`.
 
 ## how
-Build with `make build` and move the created `bin/hypertrav` somewhere on your $`PATH`.
-Including parallel reading for SSDs soon. With :heart: and :green_salad: by Exr0n.
+Build with `make build` and move the created `bin/hypertrav` somewhere on your `$PATH`.
+
+## meta
+
+Including parallel reading for SSDs soon.
+
+With :heart: and :green_salad: by @Exr0n.
 
