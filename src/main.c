@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <dirent.h>
+#include <unistd.h>
 
 #define invalid_dir(str) (str[0] == '.'  && (str[1] == '\0' || (str[1] == '.' && str[2] == '\0')))
 
@@ -35,10 +36,11 @@ void list_dir(char path[], size_t nlen, size_t nmax, int (*callback)(const char 
 
 int main(int argc, const char**argv) {
 
+    sleep(3);
+
     char path[1<<16] = ".";
     if (argc > 1) memcpy(path, argv[1], strlen(argv[1]));
     list_dir(path, strlen(path), sizeof(path), puts);
 
     return 0;
 }
-
