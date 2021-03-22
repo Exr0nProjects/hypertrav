@@ -3,11 +3,14 @@
 #include <string.h>
 #include <dirent.h>
 #include <unistd.h>
-#include <pthread.h>
+#include <threads.h>
+#include <stdatomic.h>
 
 #define invalid_dir(str) (str[0] == '.'  && (str[1] == '\0' || (str[1] == '.' && str[2] == '\0')))
 
 #define MAX_BUF_LEN 4096
+
+atomic_int cur_threads = 0;
 
 void list_dir(char path[], size_t nlen, size_t nmax, int (*callback)(const char *))
 {
