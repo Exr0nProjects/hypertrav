@@ -12,10 +12,15 @@
 
 int (*callback)(const char *) = NULL;
 
-int max_threads = 1;
+int max_threads = 2;
 atomic_int cur_threads = 0;
 
-void launch_list_dir(char[], size_t);
+struct PathState {
+	char *path;
+	size_t nlen;
+};
+
+int launch_list_dir(void*);
 
 void list_dir(char path[], size_t nlen)
 {
@@ -41,21 +46,39 @@ void list_dir(char path[], size_t nlen)
         // recurse directories
         if (entry->d_type == DT_DIR) {
 			// if under max, launch a new thread
-	        if (++cur_threads < max_threads) // not leq bc root thread isn't counted
-		        launch_list_dir(path, nlen);
-	        else // otherwise, recurse
+			//printf("cur_threads %d max_threads %d\n", cur_threads, max_threads);
+	        if (++cur_threads < max_threads) { // not leq bc root thread isn't counted
+		        struct PathState nxt;
+				nxt.path = (char *) malloc(MAX_BUF_LEN); // TODO: allocate only at beginning of program
+				memcpy(nxt.path, path, MAX_BUF_LEN);
+				nxt.nlen = nlen+n;
+				thrd_t thread;  // TODO: threads are freed when function returns
+				thrd_create(&thread, launch_list_dir, &nxt);
+	        }
+	        else { // otherwise, recurse
+				--cur_threads;
 				list_dir(path, nlen+n);
+	        }
         }
     }
     closedir(dir);
 }
 
-void launch_list_dir(char path[], size_t nlen)
+int launch_list_dir(void* data)
 {
-	char *newpath = (char *) malloc(MAX_BUF_LEN); // TODO: allocate only at beginning of program
-	memcpy(newpath, path, MAX_BUF_LEN);
+	char *path = ((struct PathState*)data)->path;
+	size_t nlen = ((struct PathState*)data)->nlen;
+
+	//printf("launching new thread\n");
+
 	list_dir(path, nlen);
-	free(newpath);
+
+	//printf("thread finished\n");
+
+	free(path);
+	--cur_threads;
+
+	return 0;
 }
 
 int main(int argc, const char**argv) {
@@ -63,8 +86,8 @@ int main(int argc, const char**argv) {
 
     char path[MAX_BUF_LEN] = ".";
     if (argc > 1) memcpy(path, argv[1], strlen(argv[1]));
-    //     list_dir(path, strlen(path), sizeof(path), puts);
-    launch_list_dir(path, strlen(path));
+    list_dir(path, strlen(path));
+    //launch_list_dir(path, strlen(path));
 
     return 0;
 }
