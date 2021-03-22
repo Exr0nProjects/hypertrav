@@ -1,5 +1,5 @@
-CFLAGS=-O3 --std=gnu17
+CFLAGS=-O3 --std=gnu17 -lpthread
 
 build: src/main.c
-	clang $(CFLAGS) src/main.c -o bin/hypertrav
+	gcc $(CFLAGS) src/main.c -o bin/hypertrav
 
