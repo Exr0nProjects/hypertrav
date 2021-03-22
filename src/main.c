@@ -10,9 +10,14 @@
 
 #define MAX_BUF_LEN 4096
 
+int (*callback)(const char *) = NULL;
+
+int max_threads = 1;
 atomic_int cur_threads = 0;
 
-void list_dir(char path[], size_t nlen, size_t nmax, int (*callback)(const char *))
+void launch_list_dir(char[], size_t);
+
+void list_dir(char path[], size_t nlen)
 {
     DIR *dir;
     struct dirent *entry;
@@ -31,29 +36,35 @@ void list_dir(char path[], size_t nlen, size_t nmax, int (*callback)(const char 
             path[nlen+n] = entry->d_name[n];
         path[nlen+n] = 0;
 
-        // call the callback
         callback(path);
 
         // recurse directories
-        if (entry->d_type == DT_DIR)
-            list_dir(path, nlen+n, nmax, callback);
+        if (entry->d_type == DT_DIR) {
+			// if under max, launch a new thread
+	        if (++cur_threads < max_threads) // not leq bc root thread isn't counted
+		        launch_list_dir(path, nlen);
+	        else // otherwise, recurse
+				list_dir(path, nlen+n);
+        }
     }
     closedir(dir);
 }
 
-void launch_list_dir(char path[], size_t nlen, size_t nmax, int (*callback)(const char*))
+void launch_list_dir(char path[], size_t nlen)
 {
-	char *newpath = (char *) malloc(nmax); // TODO: allocate only at beginning of program
-	memcpy(newpath, path, nmax);
-	list_dir(path, nlen, nmax, callback);
+	char *newpath = (char *) malloc(MAX_BUF_LEN); // TODO: allocate only at beginning of program
+	memcpy(newpath, path, MAX_BUF_LEN);
+	list_dir(path, nlen);
 	free(newpath);
 }
 
 int main(int argc, const char**argv) {
+    callback = puts;
+
     char path[MAX_BUF_LEN] = ".";
     if (argc > 1) memcpy(path, argv[1], strlen(argv[1]));
     //     list_dir(path, strlen(path), sizeof(path), puts);
-    launch_list_dir(path, strlen(path), sizeof(path), puts);
+    launch_list_dir(path, strlen(path));
 
     return 0;
 }
