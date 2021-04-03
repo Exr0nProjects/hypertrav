@@ -15,6 +15,13 @@ Intended for use with `fzf` or as a front end to any interactive narrowing featu
 Simply `hypertrav | fzf` or `export FZF_CTRL_T_COMMAND=hypertrav`.
 
 ## how
+
+### usage
+`hypertrav [root path]`.
+
+No argument defaults to `hypertrav .`.
+
+### build
 Build with `make build` and move the created `bin/hypertrav` somewhere on your `$PATH`.
 
 ## meta
